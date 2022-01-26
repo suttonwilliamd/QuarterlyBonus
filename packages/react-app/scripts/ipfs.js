@@ -6,9 +6,9 @@ const { globSource } = ipfsAPI;
 
 const infura = { host: "ipfs.infura.io", port: "5001", protocol: "https" };
 // run your own ipfs daemon: https://docs.ipfs.io/how-to/command-line-quick-start/#install-ipfs
-// const localhost = { host: "localhost", port: "5001", protocol: "http" };
+ const localhost = { host: "localhost", port: "5001", protocol: "http" };
 
-const ipfs = ipfsAPI(infura);
+const ipfs = ipfsAPI(localhost);
 
 const ipfsGateway = "https://ipfs.io/ipfs/";
 const ipnsGateway = "https://ipfs.io/ipns/";

@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { Address, Balance, Events } from "../components";
 
 export default function ExampleUI({
-  purpose,
+  magicEarnyPoints,
   address,
   mainnetProvider,
   localProvider,
@@ -15,7 +15,7 @@ export default function ExampleUI({
   readContracts,
   writeContracts,
 }) {
-  const [newPurpose, setNewPurpose] = useState("loading...");
+  const [newVal, setbuyinVal] = useState("1");
 
   return (
     <div>
@@ -23,197 +23,99 @@ export default function ExampleUI({
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
-        <h2>Example UI:</h2>
-        <h4>purpose: {purpose}</h4>
-        <Divider />
-        <div style={{ margin: 8 }}>
-          <Input
-            onChange={e => {
-              setNewPurpose(e.target.value);
-            }}
-          />
-          <Button
-            style={{ marginTop: 8 }}
-            onClick={async () => {
-              /* look how you call setPurpose on your contract: */
-              /* notice how you pass a call back for tx updates too */
-              const result = tx(writeContracts.YourContract.setPurpose(newPurpose), update => {
-                console.log("📡 Transaction Update:", update);
-                if (update && (update.status === "confirmed" || update.status === 1)) {
-                  console.log(" 🍾 Transaction " + update.hash + " finished!");
-                  console.log(
-                    " ⛽️ " +
-                      update.gasUsed +
-                      "/" +
-                      (update.gasLimit || update.gas) +
-                      " @ " +
-                      parseFloat(update.gasPrice) / 1000000000 +
-                      " gwei",
-                  );
-                }
-              });
-              console.log("awaiting metamask/web3 confirm result...", result);
-              console.log(await result);
-            }}
-          >
-            Set Purpose!
-          </Button>
-        </div>
-        <Divider />
-        Your Address:
-        <Address address={address} ensProvider={mainnetProvider} fontSize={16} />
-        <Divider />
-        ENS Address Example:
+        <h2>Welcome to QuarterlyBonus!</h2>
         <Address
-          address="0x34aA3F359A9D614239015126635CE7732c18fDF3" /* this will show as austingriffith.eth */
+          address={readContracts && readContracts.QuarterlyBonus ? readContracts.QuarterlyBonus.address : null}
           ensProvider={mainnetProvider}
           fontSize={16}
         />
-        <Divider />
-        {/* use utils.formatEther to display a BigNumber: */}
-        <h2>Your Balance: {yourLocalBalance ? utils.formatEther(yourLocalBalance) : "..."}</h2>
-        <div>OR</div>
-        <Balance address={address} provider={localProvider} price={price} />
-        <Divider />
-        <div>🐳 Example Whale Balance:</div>
-        <Balance balance={utils.parseEther("1000")} provider={localProvider} price={price} />
-        <Divider />
-        {/* use utils.formatEther to display a BigNumber: */}
-        <h2>Your Balance: {yourLocalBalance ? utils.formatEther(yourLocalBalance) : "..."}</h2>
-        <Divider />
-        Your Contract Address:
-        <Address
-          address={readContracts && readContracts.YourContract ? readContracts.YourContract.address : null}
-          ensProvider={mainnetProvider}
-          fontSize={16}
-        />
+        <br />
+        <Button type="primary" href="https://scan.thundercore.com/address/0xBACcA15a8d49018cE20e7E354a1B31714e171FC7">Verified Contract</Button>
         <Divider />
         <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /* look how you call setPurpose on your contract: */
-              tx(writeContracts.YourContract.setPurpose("🍻 Cheers"));
-            }}
-          >
-            Set Purpose to &quot;🍻 Cheers&quot;
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /*
-              you can also just craft a transaction and send it to the tx() transactor
-              here we are sending value straight to the contract's address:
-            */
-              tx({
-                to: writeContracts.YourContract.address,
-                value: utils.parseEther("0.001"),
-              });
-              /* this should throw an error about "no fallback nor receive function" until you add it */
-            }}
-          >
-            Send Value
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
+          <Input defaultValue={"1"} onChange={e => {
+            setbuyinVal(e.target.value);
+          }} />
           <Button
             onClick={() => {
               /* look how we call setPurpose AND send some value along */
               tx(
-                writeContracts.YourContract.setPurpose("💵 Paying for this one!", {
-                  value: utils.parseEther("0.001"),
+                writeContracts.QuarterlyBonus.buyin({
+                  value: utils.parseEther(newVal),
                 }),
               );
               /* this will fail until you make the setPurpose function payable */
             }}
           >
-            Set Purpose With Value
+            💸 Buy in for {newVal} TT
           </Button>
-        </div>
-        <div style={{ margin: 8 }}>
+          <div>
           <Button
             onClick={() => {
-              /* you can also just craft a transaction and send it to the tx() transactor */
-              tx({
-                to: writeContracts.YourContract.address,
-                value: utils.parseEther("0.001"),
-                data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)", [
-                  "🤓 Whoa so 1337!",
-                ]),
-              });
-              /* this should throw an error about "no fallback nor receive function" until you add it */
+              /* look how we call setPurpose AND send some value along */
+              tx(
+                writeContracts.QuarterlyBonus.compound({
+                  
+                }),
+              );
+              /* this will fail until you make the setPurpose function payable */
             }}
           >
-            Another Example
+           💵 Compound
           </Button>
+          <Button
+            onClick={() => {
+              /* look how we call setPurpose AND send some value along */
+              tx(
+                writeContracts.QuarterlyBonus.redeem({
+                }),
+              );
+              /* this will fail until you make the setPurpose function payable */
+            }}
+          >
+            🤑 Redeem
+          </Button>
+          </div>
+        </div>
+        <Divider />
+
+
+        <p>Welcome to Quarterly Bonus!</p>
+
+        <p>This game accumulates 10% of your buyin *this round* every day.</p>
+
+        <p>A round ends when the contract balance is depleted. You then need to buy in again, therefore this contract is more sustainable than its peers. It does NOT promise returns forever.</p>
+
+        <p>Buy in and withdraw each have a fee of 10%. That is typical for a game like this. What is not typical is what I have chosen to do with this 10%:</p>
+
+        <p>1% is burned. Roughly 7.7% is the developer's fee. The rest goes into the Quarterly Bonus.</p>
+
+        <p>What's the Quarterly Bonus? As the game is played, the Quarterly Bonus pot grows. At the end of 3 months, this pot is split EVENLY between all players.</p>
+        <p>This feature was impossible to test on the testnet, but this is how I intend it to work and since we have an immutable ledger, I will manually compensate players if my code has a bug.</p>
+
+        <p>I am NOT a web developer, so I'm aware this website doesn't look great. Thank you for your patience while I make it look better and be more informative.</p>
+
+        <p>If you have anything to say about this. Hatemail, criticisms, offers to help, or do you want to rent some ad space? Email me:</p> <a href="mailto:quarterlyb@gmail.com">quarterlyb@gmail.com</a>
+
+
+
+
+
+
+
+
+        <Divider />
+        Your Address:
+        <Address address={address} ensProvider={mainnetProvider} fontSize={16} />
+        <Divider />
+        <div style={{ margin: 8 }}>
+          
         </div>
       </div>
 
-      {/*
-        📑 Maybe display a list of events?
-          (uncomment the event and emit line in YourContract.sol! )
-      */}
-      <Events
-        contracts={readContracts}
-        contractName="YourContract"
-        eventName="SetPurpose"
-        localProvider={localProvider}
-        mainnetProvider={mainnetProvider}
-        startBlock={1}
-      />
 
       <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 256 }}>
-        <Card>
-          Check out all the{" "}
-          <a
-            href="https://github.com/austintgriffith/scaffold-eth/tree/master/packages/react-app/src/components"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📦 components
-          </a>
-        </Card>
-
-        <Card style={{ marginTop: 32 }}>
-          <div>
-            There are tons of generic components included from{" "}
-            <a href="https://ant.design/components/overview/" target="_blank" rel="noopener noreferrer">
-              🐜 ant.design
-            </a>{" "}
-            too!
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <Button type="primary">Buttons</Button>
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <SyncOutlined spin /> Icons
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            Date Pickers?
-            <div style={{ marginTop: 2 }}>
-              <DatePicker onChange={() => {}} />
-            </div>
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Slider range defaultValue={[20, 50]} onChange={() => {}} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Switch defaultChecked onChange={() => {}} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Progress percent={50} status="active" />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Spin />
-          </div>
-        </Card>
+        
       </div>
     </div>
   );

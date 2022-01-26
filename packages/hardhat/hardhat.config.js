@@ -26,7 +26,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "thunder";
 
 const mainnetGwei = 21;
 
@@ -148,6 +148,22 @@ module.exports = {
     xdai: {
       url: "https://rpc.xdaichain.com/",
       gasPrice: 1000000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    testthunder: {
+      url: "https://testnet-rpc.thundercore.com/",
+      gasPrice: 1000000000,
+      chainId: 18,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    thunder: {
+      url: "https://mainnet-rpc.thundercore.com/",
+      gasPrice: 1000000000,
+      chainId: 108,
       accounts: {
         mnemonic: mnemonic(),
       },
