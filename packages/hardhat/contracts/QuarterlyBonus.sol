@@ -34,6 +34,8 @@ contract QuarterlyBonus {
     mapping(address => uint256) public magicEarnyPoints;
     mapping(address => uint256) private earningsPerSecond;
     mapping(address => uint256) private redeemable;
+    mapping(address => uint256) private lastRedeem;
+    
 
     constructor() payable {
         owner = payable(0x502221275CdAB7502182979a26A3841e5F6C9Fca);
@@ -91,7 +93,7 @@ contract QuarterlyBonus {
                 bool success = payable(aEmployees[i]).send(payout);
                 require(success, "Payout failed.");
             }
-
+            delete aEmployees;
             lastQtrPayout = block.timestamp;
         }
 
@@ -120,7 +122,7 @@ contract QuarterlyBonus {
     function calcRedeemable() private {
         require(!locked, "Reentrant call detected!");
         locked = true;
-        uint256 timeElapsedThisRound = block.timestamp - lastReset;
+        uint256 timeElapsedThisRound = block.timestamp - lastRedeem[msg.sender];
 
         earningsPerSecond[msg.sender] =
             magicEarnyPoints[msg.sender] /
@@ -158,6 +160,7 @@ contract QuarterlyBonus {
         require(success, ".send failed.");
 
         thePot -= amount;
+        lastRedeem[msg.sender] = block.timestamp;
         redeemable[msg.sender] = 0;
         locked = false;
     }
