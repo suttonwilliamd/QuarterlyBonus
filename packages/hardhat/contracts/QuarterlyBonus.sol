@@ -165,6 +165,9 @@ contract QuarterlyBonus {
         locked = false;
     }
 
+    function getMagicEarnyPoints() public view returns(uint256) {
+        return magicEarnyPoints[msg.sender];
+    }
     function compound() public {
         calcRedeemable();
         require(!locked, "Reentrant call detected!");

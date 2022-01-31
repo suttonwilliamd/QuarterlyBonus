@@ -3,9 +3,10 @@ import { utils } from "ethers";
 import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch } from "antd";
 import React, { useState } from "react";
 import { Address, Balance, Events } from "../components";
+import { useEffect } from "react";
+import { ethers } from "ethers";
 
 export default function ExampleUI({
-  magicEarnyPoints,
   address,
   mainnetProvider,
   localProvider,
@@ -14,8 +15,29 @@ export default function ExampleUI({
   tx,
   readContracts,
   writeContracts,
+  balance,
+  magicEP,
 }) {
   const [newVal, setbuyinVal] = useState("1");
+  const [redeemable, setredeemable] = useState(0);
+  const [deposited, setdeposited] = useState(0);
+  const [earningspersecond, setEPS] = useState(0);
+  const [lastRedeem, setLastRedeem] = useState(0);
+  const [timeSinceLastRedeem, settimeSinceLastRedeem] = useState(0);
+  let d = new Date();
+
+
+  useEffect(() => {
+    // Update the document title using the browser API
+    //document.title = `${redeemable}`;
+    d = new Date();
+    setEPS((deposited / 10 / 86400).toFixed(8));
+    settimeSinceLastRedeem(d.getTime() - lastRedeem);
+    setredeemable(earningspersecond * timeSinceLastRedeem);
+    
+
+  }, [newVal, earningspersecond]);
+
 
   return (
     <div>
@@ -30,20 +52,28 @@ export default function ExampleUI({
           fontSize={16}
         />
         <br />
-        <Button type="primary" href="https://scan.thundercore.com/address/0xBACcA15a8d49018cE20e7E354a1B31714e171FC7">Verified Contract</Button>
+        <Button type="primary" href="https://scan.thundercore.com/address/0x654757A42091b8EC25ccbE3364B24FD5500d4F59">Verified Contract</Button>
         <Divider />
         <div style={{ margin: 8 }}>
-          <Input defaultValue={"1"} onChange={e => {
+        
+          <Input style={{width: 75}} defaultValue={"1"} onChange={e => {
             setbuyinVal(e.target.value);
           }} />
+       <br />
+
+      <h3>Your balance: {ethers.utils.formatEther(yourLocalBalance)}</h3>
+       <h3>Deposited:      {magicEP     /*Math.round((deposited + Number.EPSILON) * 100) / 100*/}</h3>
+       <h3>EPS: {earningspersecond}</h3>
+       <h3>Last Redeem: {lastRedeem}</h3>
+       <h3>Time since last redeem: {timeSinceLastRedeem}</h3>
           <Button
-            onClick={() => {
-              /* look how we call setPurpose AND send some value along */
+            onClick={() => {/* look how we call setPurpose AND send some value along */
+              if(ethers.utils.formatEther(yourLocalBalance) > newVal)
               tx(
                 writeContracts.QuarterlyBonus.buyin({
                   value: utils.parseEther(newVal),
                 }),
-              );
+                setdeposited(Number(deposited) + Number(newVal)));
               /* this will fail until you make the setPurpose function payable */
             }}
           >
@@ -70,10 +100,11 @@ export default function ExampleUI({
                 writeContracts.QuarterlyBonus.redeem({
                 }),
               );
+              setLastRedeem(d.getTime());
               /* this will fail until you make the setPurpose function payable */
             }}
           >
-            🤑 Redeem
+            🤑 Redeem {redeemable.toFixed(4)} TT
           </Button>
           </div>
         </div>
