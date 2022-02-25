@@ -54,6 +54,8 @@ contract QuarterlyBonus {
     function getLastReset() public view returns (uint256) {
       return lastReset;
     }
+    
+    
 
     function hireEmployee(address payable _employee) private {
         Employees[_employee] = true;
@@ -76,7 +78,7 @@ contract QuarterlyBonus {
         }
         if (
             block.timestamp - lastReset > oneWeek &&
-            address(this).balance < 1 ether
+            thePot < 1 ether
         ) {
             magicEarnyPoints[msg.sender] = 0;
             earningsPerSecond[msg.sender] = 0;
@@ -122,7 +124,7 @@ contract QuarterlyBonus {
     function calcRedeemable() private {
         require(!locked, "Reentrant call detected!");
         locked = true;
-        uint256 timeElapsedThisRound = block.timestamp - lastRedeem[msg.sender];
+        uint256 timeSinceLastRedeem = block.timestamp - lastRedeem[msg.sender];
 
         earningsPerSecond[msg.sender] =
             magicEarnyPoints[msg.sender] /
@@ -130,7 +132,7 @@ contract QuarterlyBonus {
             aDay;
         redeemable[msg.sender] =
             earningsPerSecond[msg.sender] *
-            timeElapsedThisRound;
+            timeSinceLastRedeem;
         locked = false;
     }
 
@@ -144,11 +146,14 @@ contract QuarterlyBonus {
         require(!locked, "Reentrant call detected!");
         locked = true;
         // Deposits
+        
+        if(amount > thePot)
+            amount = thePot;
         uint256 pay = amount;
         uint256 devFee = amount / 13;
 
         bool devsuccess = payable(owner).send(devFee);
-        require(devsuccess, ".send failed.");
+        require(devsuccess, "dev.send failed on redeem");
         pay -= devFee;
         quarterlyBonus += amount / 40;
         pay -= amount / 40;
@@ -157,7 +162,7 @@ contract QuarterlyBonus {
         pay -= amount / 256;
 
         bool success = payable(msg.sender).send(pay);
-        require(success, ".send failed.");
+        require(success, "redeem.send failed.");
 
         thePot -= amount;
         lastRedeem[msg.sender] = block.timestamp;
@@ -165,7 +170,7 @@ contract QuarterlyBonus {
         locked = false;
     }
 
-    function getMagicEarnyPoints() public view returns(uint256) {
+    function getMagicEarnyPoints() external view returns(uint256) {
         return magicEarnyPoints[msg.sender];
     }
     function compound() public {

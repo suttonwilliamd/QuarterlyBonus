@@ -5,6 +5,14 @@ import React, { useState } from "react";
 import { Address, Balance, Events } from "../components";
 import { useEffect } from "react";
 import { ethers } from "ethers";
+import {
+  //useBalance,
+  //useContractLoader,
+  useContractReader,
+  //useGasPrice,
+  //useOnBlock,
+  //useUserProviderAndSigner,
+} from "eth-hooks";
 
 export default function ExampleUI({
   address,
@@ -22,21 +30,34 @@ export default function ExampleUI({
   const [redeemable, setredeemable] = useState(0);
   const [deposited, setdeposited] = useState(0);
   const [earningspersecond, setEPS] = useState(0);
-  const [lastRedeem, setLastRedeem] = useState(0);
+  const [lastRedeem, setLastRedeem] = useState(1);
   const [timeSinceLastRedeem, settimeSinceLastRedeem] = useState(0);
+  const [inplay, setinplay] = useState(deposited);
+  const [redeemstring, setredeemstring] = useState("");
+  //const [magicEP, setmagicEP] = useState(0);
   let d = new Date();
+  
 
 
   useEffect(() => {
-    // Update the document title using the browser API
-    //document.title = `${redeemable}`;
+    const interval = setInterval(() => {
+      
     d = new Date();
-    setEPS((deposited / 10 / 86400).toFixed(8));
-    settimeSinceLastRedeem(d.getTime() - lastRedeem);
-    setredeemable(earningspersecond * timeSinceLastRedeem);
     
+    //setmagicEP(readContracts.QuarterlyBonus.magicEarnyPoints)
+    setEPS((deposited / 10 / 86400).toFixed(10));
+    settimeSinceLastRedeem(Date.now() - lastRedeem);
+    setredeemable(earningspersecond * timeSinceLastRedeem);
+    setredeemstring(Date.now());
 
-  }, [newVal, earningspersecond]);
+
+
+    }, 500);
+  
+    return () => clearInterval(interval);
+  }, [newVal, earningspersecond, lastRedeem, timeSinceLastRedeem, deposited, redeemable]);
+
+
 
 
   return (
@@ -52,7 +73,7 @@ export default function ExampleUI({
           fontSize={16}
         />
         <br />
-        <Button type="primary" href="https://scan.thundercore.com/address/0x654757A42091b8EC25ccbE3364B24FD5500d4F59">Verified Contract</Button>
+        <Button type="primary" href={readContracts && readContracts.QuarterlyBonus ? "https://scan.thundercore.com/address/" + readContracts.QuarterlyBonus.address : null}>Verified Contract</Button>
         <Divider />
         <div style={{ margin: 8 }}>
         
@@ -63,9 +84,10 @@ export default function ExampleUI({
 
       <h3>Your balance: {ethers.utils.formatEther(yourLocalBalance)}</h3>
        <h3>Deposited:      {magicEP     /*Math.round((deposited + Number.EPSILON) * 100) / 100*/}</h3>
+       <h3>In play: {inplay}</h3>
        <h3>EPS: {earningspersecond}</h3>
        <h3>Last Redeem: {lastRedeem}</h3>
-       <h3>Time since last redeem: {timeSinceLastRedeem}</h3>
+       <h3>Time since last redeem: {(timeSinceLastRedeem / 1000).toFixed(0)} seconds ago</h3>
           <Button
             onClick={() => {/* look how we call setPurpose AND send some value along */
               if(ethers.utils.formatEther(yourLocalBalance) > newVal)
@@ -74,6 +96,7 @@ export default function ExampleUI({
                   value: utils.parseEther(newVal),
                 }),
                 setdeposited(Number(deposited) + Number(newVal)));
+                setinplay(Number(inplay) + Number(newVal));
               /* this will fail until you make the setPurpose function payable */
             }}
           >
@@ -100,11 +123,11 @@ export default function ExampleUI({
                 writeContracts.QuarterlyBonus.redeem({
                 }),
               );
-              setLastRedeem(d.getTime());
+              setLastRedeem(Date.now());
               /* this will fail until you make the setPurpose function payable */
             }}
           >
-            🤑 Redeem {redeemable.toFixed(4)} TT
+            🤑 Redeem {((redeemable - .002)/1000).toFixed(4)} TT
           </Button>
           </div>
         </div>
@@ -127,6 +150,9 @@ export default function ExampleUI({
         <p>I am NOT a web developer, so I'm aware this website doesn't look great. Thank you for your patience while I make it look better and be more informative.</p>
 
         <p>If you have anything to say about this. Hatemail, criticisms, offers to help, or do you want to rent some ad space? Email me:</p> <a href="mailto:quarterlyb@gmail.com">quarterlyb@gmail.com</a>
+
+
+
 
 
 

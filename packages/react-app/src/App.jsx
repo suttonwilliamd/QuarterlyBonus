@@ -167,8 +167,9 @@ function App(props) {
   ]);
 
   // keep track of a variable from the contract in the local React state:
-  const magicEarnyPoints = useContractReader(readContracts, "QuarterlyBonus", "magicEarnyPoints");
+  const magicEarnyPoints = useContractReader(readContracts, "QuarterlyBonus", "magicEarnyPoints", [address]);
 
+  //let magicEP = useContractReader(readContracts, "QuarterlyBonus", "magicEarnyPoints", [address]);
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -267,7 +268,7 @@ function App(props) {
             tx={tx}
             writeContracts={writeContracts}
             readContracts={readContracts}
-            magicEarnyPoints={magicEarnyPoints}
+            magicEP={magicEarnyPoints}
           />
       <ThemeSwitch />
 
@@ -296,7 +297,7 @@ function App(props) {
             blockExplorer={blockExplorer}
           />
         </div>
-        {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
+        {yourLocalBalance.lte(ethers.BigNumber.from("10000000000000")) && (
           <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
         )}
       </div>
