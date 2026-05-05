@@ -33,7 +33,7 @@
     "fork": "hardhat node --no-deploy --network hardhat --fork ${MAINNET_INFURA_URL:-https://mainnet.infura.io/v3/${INFURA_KEY:-}}",
     "test": "hardhat test --network hardhat",
     "compile": "hardhat compile",
-    "deploy": "hardhat deploy --network thunder --export-all ../react-app/src/contracts/hardhat_contracts.json",
+    "deploy": "hardhat deploy --network thunder --export-all ../react-app/src/contracts/hardhat_contracts.json && node scripts/generate-nextjs-deployedContracts.js",
     "postdeploy": "hardhat run --network thunder scripts/publish.js",
     "watch": "node scripts/watch.js",
     "accounts": "hardhat accounts",

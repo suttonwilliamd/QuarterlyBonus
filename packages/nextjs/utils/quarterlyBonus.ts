@@ -1,3 +1,4 @@
+import deployedContracts from "~~/contracts/deployedContracts";
 import { Address, isAddress } from "viem";
 
 export const quarterlyBonusAbi = [
@@ -59,8 +60,13 @@ export const quarterlyBonusAbi = [
   },
 ] as const;
 
-export const getQuarterlyBonusAddress = (): Address | undefined => {
-  const raw = process.env.NEXT_PUBLIC_QUARTERLYBONUS_ADDRESS;
-  if (!raw || !isAddress(raw)) return undefined;
-  return raw;
+export const getQuarterlyBonusAddress = (chainId: number): Address | undefined => {
+  const fromEnv = process.env.NEXT_PUBLIC_QUARTERLYBONUS_ADDRESS;
+  if (fromEnv && isAddress(fromEnv)) return fromEnv;
+
+  const contractsForChain = (deployedContracts as any)?.[chainId];
+  const fromArtifacts = contractsForChain?.QuarterlyBonus?.address;
+  if (fromArtifacts && isAddress(fromArtifacts)) return fromArtifacts;
+
+  return undefined;
 };

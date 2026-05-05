@@ -23,7 +23,7 @@ const formatTimeAgo = (unixTimestamp?: bigint) => {
 const Home: NextPage = () => {
   const { address: connectedAddress, isConnected, chain } = useAccount();
   const { targetNetwork } = useTargetNetwork();
-  const contractAddress = useMemo(() => getQuarterlyBonusAddress(), []);
+  const contractAddress = useMemo(() => getQuarterlyBonusAddress(targetNetwork.id), [targetNetwork.id]);
   const wrongNetwork = isConnected && chain?.id !== targetNetwork.id;
 
   const [buyInAmount, setBuyInAmount] = useState("0.085");
@@ -74,7 +74,7 @@ const Home: NextPage = () => {
   });
 
   const actionDisabledReason = useMemo(() => {
-    if (!contractAddress) return "Set NEXT_PUBLIC_QUARTERLYBONUS_ADDRESS to enable actions.";
+    if (!contractAddress) return "Deploy QuarterlyBonus (yarn deploy) so the frontend can auto-detect its address.";
     if (!isConnected) return "Connect wallet to continue.";
     if (wrongNetwork) return `Switch wallet network to ${targetNetwork.name}.`;
     return null;
