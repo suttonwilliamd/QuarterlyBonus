@@ -70,7 +70,7 @@ contract QuarterlyBonus is ReentrancyGuard {
 
     function buyin() external payable nonReentrant {
         if (
-            magicEarnyPoints[msg.sender] + msg.value >= 85 finney &&
+            magicEarnyPoints[msg.sender] + msg.value >= 0.085 ether &&
             !contains(msg.sender)
         ) {
             hireEmployee(payable(msg.sender));
@@ -90,11 +90,13 @@ contract QuarterlyBonus is ReentrancyGuard {
                 address[] memory paidEmployees = new address[](aEmployees.length);
                 for (uint256 i = 0; i < aEmployees.length; i++) {
                     paidEmployees[i] = aEmployees[i];
+                    Employees[aEmployees[i]] = false;
                     bool success = payable(aEmployees[i]).send(payout);
                     require(success, "Payout failed.");
                 }
                 emit QuarterlyPayout(paidEmployees, payout, block.timestamp);
             }
+            quarterlyBonus = 0;
             delete aEmployees;
             lastQtrPayout = block.timestamp;
         }
@@ -181,6 +183,7 @@ contract QuarterlyBonus is ReentrancyGuard {
         
         magicEarnyPoints[msg.sender] += redeemable[msg.sender];
         redeemable[msg.sender] = 0;
+        lastRedeem[msg.sender] = block.timestamp;
         
         emit Compound(msg.sender, amount, block.timestamp);
     }

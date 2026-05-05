@@ -4,7 +4,9 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
-require("@tenderly/hardhat-tenderly");
+if (process.env.TENDERLY_PROJECT && process.env.TENDERLY_USERNAME) {
+  require("@tenderly/hardhat-tenderly");
+}
 
 require("hardhat-deploy");
 require("hardhat-gas-reporter");
@@ -64,6 +66,14 @@ module.exports = {
   // Follow the directions, and uncomment the network you wish to deploy to.
 
   networks: {
+    hardhat: {
+      accounts: {
+        mnemonic:
+          "test test test test test test test test test test test junk",
+        count: 20,
+        accountsBalance: "10000000000000000000000",
+      },
+    },
     localhost: {
       url: "http://localhost:8545",
       /*      
