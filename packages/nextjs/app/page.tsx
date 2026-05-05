@@ -34,7 +34,7 @@ const Home: NextPage = () => {
                 <>
                   <Address address={connectedAddress} chain={targetNetwork} />
                   <div className="mt-2">
-                    <Balance address={connectedAddress} className="text-lg" />
+                    <Balance address={connectedAddress} />
                   </div>
                 </>
               ) : (

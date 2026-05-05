@@ -67,11 +67,18 @@
       "**/hardhat",
       "**/hardhat/**",
       "**/hardhat-ts",
-      "**/hardhat-ts/**"
+      "**/hardhat-ts/**",
+      "**/@se-2/nextjs/next",
+      "**/@se-2/nextjs/next/**",
+      "**/@se-2/nextjs/react",
+      "**/@se-2/nextjs/react/**",
+      "**/@se-2/nextjs/react-dom",
+      "**/@se-2/nextjs/react-dom/**"
     ]
   },
   "dependencies": {},
   "devDependencies": {
-    "husky": "^7.0.2"
+    "husky": "^7.0.2",
+    "next": "^15.5.15"
   }
 }
