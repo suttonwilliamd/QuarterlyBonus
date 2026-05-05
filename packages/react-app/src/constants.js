@@ -73,8 +73,8 @@ export const NETWORKS = {
     price: 0.007179,
     gasPrice: 1000000000,
     rpcUrl: "https://testnet-rpc.thundercore.com/",
-    faucet: "https://xdai-faucet.top/",
-    blockExplorer: "https://blockscout.com/poa/xdai/",
+    faucet: "https://faucet-testnet.thundercore.com/",
+    blockExplorer: "https://explorer-testnet.thundercore.com/",
   },
   thunder: {
     name: "thunder",
@@ -83,8 +83,8 @@ export const NETWORKS = {
     price: 0.007179,
     gasPrice: 1000000000,
     rpcUrl: "https://mainnet-rpc.thundercore.com/",
-    faucet: "https://xdai-faucet.top/",
-    blockExplorer: "https://blockscout.com/poa/xdai/",
+    faucet: "",
+    blockExplorer: "https://viewblock.io/thundercore/",
   },
   polygon: {
     name: "polygon",

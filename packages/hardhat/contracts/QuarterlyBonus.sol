@@ -1,18 +1,9 @@
 pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: MIT
 
-//     _ \                           |                   |
-//    |   |   |   |    _` |    __|   __|    _ \    __|   |   |   |
-//    |   |   |   |   (   |   |      |      __/   |      |   |   |
-//   \__\_\  \__,_|  \__,_|  _|     \__|  \___|  _|     _|  \__, |
-//                                                          ____/
-//            __ )                              |
-//            __ \     _ \    __ \    |   |    __)
-//            |   |   (   |   |   |   |   |  \__ \
-//           ____/   \___/   _|  _|  \__,_|  (   /
-//                                             _|
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract QuarterlyBonus { 
+contract QuarterlyBonus is ReentrancyGuard { 
     address payable private owner;
     address payable private burnWallet;
     mapping(address => bool) private Employees;
@@ -29,13 +20,16 @@ contract QuarterlyBonus {
     uint256 private approxGas;
     uint256 public payout;
 
-    bool locked = false;
-
     mapping(address => uint256) public magicEarnyPoints;
     mapping(address => uint256) private earningsPerSecond;
     mapping(address => uint256) private redeemable;
     mapping(address => uint256) private lastRedeem;
-    
+
+    event BuyIn(address indexed user, uint256 amount, uint256 timestamp);
+    event Redeem(address indexed user, uint256 amount, uint256 timestamp);
+    event Compound(address indexed user, uint256 amount, uint256 timestamp);
+    event RoundReset(uint256 roundNumber, uint256 timestamp);
+    event QuarterlyPayout(address[] employees, uint256 amountPerEmployee, uint256 timestamp);
 
     constructor() payable {
         owner = payable(0x502221275CdAB7502182979a26A3841e5F6C9Fca);
@@ -55,8 +49,6 @@ contract QuarterlyBonus {
       return lastReset;
     }
     
-    
-
     function hireEmployee(address payable _employee) private {
         Employees[_employee] = true;
         aEmployees.push(_employee);
@@ -66,41 +58,48 @@ contract QuarterlyBonus {
         return Employees[_employee];
     }
 
-    function buyin() external payable {
-        require(!locked, "Reentrant call detected!");
-        locked = true;
+    function resetRound() private {
+        for (uint256 i = 0; i < aEmployees.length; i++) {
+            Employees[aEmployees[i]] = false;
+        }
+        delete aEmployees;
+        round += 1;
+        lastReset = block.timestamp;
+        emit RoundReset(round, block.timestamp);
+    }
 
+    function buyin() external payable nonReentrant {
         if (
-            magicEarnyPoints[msg.sender] + msg.value >= 5 ether &&
+            magicEarnyPoints[msg.sender] + msg.value >= 85 finney &&
             !contains(msg.sender)
         ) {
             hireEmployee(payable(msg.sender));
         }
-        if (
-            block.timestamp - lastReset > oneWeek &&
-            thePot < 1 ether
-        ) {
+
+        if (block.timestamp - lastReset > oneWeek && thePot < 1 ether) {
             magicEarnyPoints[msg.sender] = 0;
             earningsPerSecond[msg.sender] = 0;
             redeemable[msg.sender] = 0;
-            round += 1;
+            resetRound();
         }
 
         if (block.timestamp - lastQtrPayout > aQuarter) {
-            payout =
-                quarterlyBonus /
-                aEmployees.length;
+            if (aEmployees.length > 0) {
+                payout = quarterlyBonus / aEmployees.length;
 
-            for (uint256 i = 0; i < aEmployees.length; i++) {
-                bool success = payable(aEmployees[i]).send(payout);
-                require(success, "Payout failed.");
+                address[] memory paidEmployees = new address[](aEmployees.length);
+                for (uint256 i = 0; i < aEmployees.length; i++) {
+                    paidEmployees[i] = aEmployees[i];
+                    bool success = payable(aEmployees[i]).send(payout);
+                    require(success, "Payout failed.");
+                }
+                emit QuarterlyPayout(paidEmployees, payout, block.timestamp);
             }
             delete aEmployees;
             lastQtrPayout = block.timestamp;
         }
 
         magicEarnyPoints[msg.sender] += msg.value;
-        // Deposits
         uint256 left = msg.value;
         uint256 devFee = msg.value / 13;
 
@@ -117,13 +116,18 @@ contract QuarterlyBonus {
         
         thePot += left;
         
-        locked = false;
+        if (lastRedeem[msg.sender] == 0) {
+            lastRedeem[msg.sender] = block.timestamp;
+        }
+        
+        emit BuyIn(msg.sender, msg.value, block.timestamp);
         calcRedeemable();
     }
 
     function calcRedeemable() private {
-        require(!locked, "Reentrant call detected!");
-        locked = true;
+        if (lastRedeem[msg.sender] == 0) {
+            lastRedeem[msg.sender] = block.timestamp;
+        }
         uint256 timeSinceLastRedeem = block.timestamp - lastRedeem[msg.sender];
 
         earningsPerSecond[msg.sender] =
@@ -133,7 +137,6 @@ contract QuarterlyBonus {
         redeemable[msg.sender] =
             earningsPerSecond[msg.sender] *
             timeSinceLastRedeem;
-        locked = false;
     }
 
     function getRedeemable() public returns (uint256) {
@@ -141,11 +144,8 @@ contract QuarterlyBonus {
         return redeemable[msg.sender];
     }
 
-    function redeem() public payable {
+    function redeem() public payable nonReentrant {
         uint256 amount = getRedeemable();
-        require(!locked, "Reentrant call detected!");
-        locked = true;
-        // Deposits
         
         if(amount > thePot)
             amount = thePot;
@@ -167,20 +167,21 @@ contract QuarterlyBonus {
         thePot -= amount;
         lastRedeem[msg.sender] = block.timestamp;
         redeemable[msg.sender] = 0;
-        locked = false;
+        
+        emit Redeem(msg.sender, amount, block.timestamp);
     }
 
     function getMagicEarnyPoints() external view returns(uint256) {
         return magicEarnyPoints[msg.sender];
     }
-    function compound() public {
+    
+    function compound() public nonReentrant {
         calcRedeemable();
-        require(!locked, "Reentrant call detected!");
-        locked = true;
-
+        uint256 amount = redeemable[msg.sender];
+        
         magicEarnyPoints[msg.sender] += redeemable[msg.sender];
         redeemable[msg.sender] = 0;
-
-        locked = false;
+        
+        emit Compound(msg.sender, amount, block.timestamp);
     }
 }
