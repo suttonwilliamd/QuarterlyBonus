@@ -26,6 +26,18 @@ describe("QuarterlyBonus", function () {
     expect(employeeAddress).to.equal(alice.address);
   });
 
+  it("only hires after crossing 0.085 ETH threshold", async function () {
+    const { contract, alice } = await deployFixture();
+
+    await contract.connect(alice).buyin({ value: ethers.utils.parseEther("0.084") });
+    expect(await contract.getEmployeeCount()).to.equal(0);
+
+    await contract.connect(alice).buyin({ value: ethers.utils.parseEther("0.001") });
+    expect(await contract.getEmployeeCount()).to.equal(1);
+    const employeeAddress = await contract.aEmployees(0);
+    expect(employeeAddress).to.equal(alice.address);
+  });
+
   it("accrues redeemable amount over time", async function () {
     const { contract, alice } = await deployFixture();
 
@@ -33,8 +45,11 @@ describe("QuarterlyBonus", function () {
     await ethers.provider.send("evm_increaseTime", [86400]);
     await ethers.provider.send("evm_mine", []);
 
+    const preview = await contract.previewRedeemable(alice.address);
+    expect(preview).to.be.gt(0);
+
     const redeemable = await contract.connect(alice).callStatic.getRedeemable();
-    expect(redeemable).to.be.gt(0);
+    expect(redeemable).to.equal(preview);
   });
 
   it("allows redeem after accrual", async function () {

@@ -146,6 +146,17 @@ contract QuarterlyBonus is ReentrancyGuard {
         return redeemable[msg.sender];
     }
 
+    function previewRedeemable(address account) external view returns (uint256) {
+        uint256 last = lastRedeem[account];
+        if (last == 0) {
+            return 0;
+        }
+
+        uint256 timeSinceLastRedeem = block.timestamp - last;
+        uint256 eps = magicEarnyPoints[account] / 10 / aDay;
+        return eps * timeSinceLastRedeem;
+    }
+
     function redeem() public payable nonReentrant {
         uint256 amount = getRedeemable();
         
@@ -175,6 +186,10 @@ contract QuarterlyBonus is ReentrancyGuard {
 
     function getMagicEarnyPoints() external view returns(uint256) {
         return magicEarnyPoints[msg.sender];
+    }
+
+    function getEmployeeCount() external view returns (uint256) {
+        return aEmployees.length;
     }
     
     function compound() public nonReentrant {
