@@ -2,6 +2,10 @@
 
 A Solidity smart contract game where employees buy in with ETH to earn magic points and redeemable earnings over time. The contract manages quarterly payouts, round resets, and compound mechanics.
 
+## Project Policies
+
+- [Security Policy](./SECURITY.md)
+
 ## Game Mechanics
 
 ### BuyIn
